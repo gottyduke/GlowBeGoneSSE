@@ -1,17 +1,30 @@
-﻿#include "skse64/GameEvents.h"  // EventDispatcherList
-#include "skse64/GameInput.h"  // InputEventDispatcher
-#include "skse64/GameMenus.h"  // MenuManager
-#include "skse64/PluginAPI.h"  // PluginHandle, SKSEMessagingInterface, SKSETaskInterface, SKSEInterface, PluginInfo
-#include "skse64_common/BranchTrampoline.h"  // g_branchTrampoline
+﻿#include "skse64/PluginAPI.h"  // PluginHandle, SKSEInterface, PluginInfo
 #include "skse64_common/skse_version.h"  // RUNTIME_VERSION
 
 #include <ShlObj.h>  // CSIDL_MYDOCUMENTS
 
-#include "Hooks.h"
-#include "version.h"
+#include "Events.h"  // g_task, g_magicEffectApplyEventHandler
+#include "version.h"  // GLOWBEGONESSE_VERSION_VERSTRING
+
+#include "RE/ScriptEventSourceHolder.h"  // ScriptEventSourceHolder
 
 
-static PluginHandle g_pluginHandle = kPluginHandle_Invalid;
+static PluginHandle				g_pluginHandle = kPluginHandle_Invalid;
+static SKSEMessagingInterface*	g_messaging = 0;
+
+
+void MessageHandler(SKSEMessagingInterface::Message* a_msg)
+{
+	switch (a_msg->type) {
+	case SKSEMessagingInterface::kMessage_DataLoaded:
+	{
+		RE::ScriptEventSourceHolder* sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
+		sourceHolder->magicEffectApplyEventSource.AddEventSink(&g_magicEffectApplyEventHandler);
+		_MESSAGE("[MESSAGE] Registered magic effect apply event handler");
+		break;
+	}
+	}
+}
 
 
 extern "C" {
@@ -47,8 +60,21 @@ extern "C" {
 	{
 		_MESSAGE("[MESSAGE] GlowBeGoneSSE loaded");
 
-		Hooks::InstallHooks();
-		_MESSAGE("[MESSAGE] Installed hooks");
+		g_task = (SKSETaskInterface*)a_skse->QueryInterface(kInterface_Task);
+		if (g_task) {
+			_MESSAGE("[MESSAGE] Task interface query successful");
+		} else {
+			_FATALERROR("[FATAL ERROR] Task interface query failed!\n");
+			return false;
+		}
+
+		g_messaging = (SKSEMessagingInterface*)a_skse->QueryInterface(kInterface_Messaging);
+		if (g_messaging->RegisterListener(g_pluginHandle, "SKSE", MessageHandler)) {
+			_MESSAGE("[MESSAGE] Messaging interface registration successful");
+		} else {
+			_FATALERROR("[FATAL ERROR] Messaging interface registration failed!\n");
+			return false;
+		}
 
 		return true;
 	}
