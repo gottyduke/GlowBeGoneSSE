@@ -4,6 +4,8 @@
 #include <ShlObj.h>  // CSIDL_MYDOCUMENTS
 
 #include "Events.h"  // g_task, g_magicEffectApplyEventHandler
+#include "Hooks.h"  // InstallHooks
+#include "Settings.h"  // Settings
 #include "version.h"  // GLOWBEGONESSE_VERSION_VERSTRING
 
 #include "RE/ScriptEventSourceHolder.h"  // ScriptEventSourceHolder
@@ -19,8 +21,16 @@ void MessageHandler(SKSEMessagingInterface::Message* a_msg)
 	case SKSEMessagingInterface::kMessage_DataLoaded:
 	{
 		RE::ScriptEventSourceHolder* sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
-		sourceHolder->magicEffectApplyEventSource.AddEventSink(&g_magicEffectApplyEventHandler);
-		_MESSAGE("[MESSAGE] Registered magic effect apply event handler");
+
+		if (!Settings::disableForActors) {
+			sourceHolder->magicEffectApplyEventSource.AddEventSink(&g_magicEffectApplyEventHandler);
+			_MESSAGE("[MESSAGE] Registered magic effect apply event handler");
+		}
+
+		if (!Settings::disableForWeapons) {
+			sourceHolder->equipEventSource.AddEventSink(&g_equipEventHandler);
+			_MESSAGE("[MESSAGE] Registered equip event event handler");
+		}
 		break;
 	}
 	}
@@ -75,6 +85,15 @@ extern "C" {
 			_FATALERROR("[FATAL ERROR] Messaging interface registration failed!\n");
 			return false;
 		}
+
+		if (Settings::loadSettings()) {
+			_MESSAGE("[MESSAGE] Settings successfully loaded");
+		} else {
+			_FATALERROR("[FATAL ERROR] Settings failed to load!\n");
+			return false;
+		}
+
+		InstallHooks();
 
 		return true;
 	}
