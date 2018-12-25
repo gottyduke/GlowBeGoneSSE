@@ -56,9 +56,6 @@ void DelayedWeaponTaskDelegate::Run()
 			}
 			RE::EffectSetting* effectSetting = 0;
 			for (auto& effect : ench->effects) {
-				if (!effect) {
-					continue;
-				}
 				if (effectSetting = effect->baseEffect) {
 					RE::TESEffectShader* effectShader = 0;
 					if (effectShader = effectSetting->data.hitShader) {
