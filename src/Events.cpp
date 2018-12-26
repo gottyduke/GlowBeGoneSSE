@@ -176,6 +176,11 @@ RE::EventResult TESEquipEventHandler::ReceiveEvent(RE::TESEquipEvent* a_event, R
 		return EventResult::kContinue;
 	}
 
+	RE::TESForm* form = RE::TESForm::LookupByID(a_event->formID);
+	if (!form || form->IsNot(RE::FormType::Weapon)) {
+		return EventResult::kContinue;
+	}
+
 	UInt32 refHandle = a_event->akSource->CreateRefHandle();
 	if (refHandle != *g_invalidRefHandle) {
 		DelayedWeaponTaskDelegate* dlgt = new DelayedWeaponTaskDelegate(refHandle, a_event->formID);
