@@ -2,32 +2,15 @@
 
 #include "skse64/PluginAPI.h"  // SKSETaskInterface
 
-#include "RE/ActiveEffect.h"  // ActiveEffect
-#include "RE/Actor.h"  // Actor
-#include "RE/BSTEvent.h"  // EventResult, BSTEventSource
-#include "RE/BSTList.h"  // BSTList
-#include "RE/EffectItem.h"  // EffectItem
-#include "RE/EffectSetting.h"  // EffectSetting
-#include "RE/EnchantmentItem.h"  // EnchantmentItem
-#include "RE/ExtraEnchantment.h"  // ExtraEnchantment
-#include "RE/FormTypes.h"  // FormType
-#include "RE/InventoryChanges.h"  // InventoryChanges
-#include "RE/InventoryEntryData.h"  // InventoryEntryData
-#include "RE/PlayerCharacter.h"  // PlayerCharacter
-#include "RE/TESEffectShader.h"  // TESEffectShader
-#include "RE/TESForm.h"  // TESForm
-#include "RE/TESMagicEffectApplyEvent.h"  // TESMagicEffectApplyEvent
-#include "RE/TESNPC.h"  // TESNPC
-#include "RE/TESObjectREFR.h"  // TESObjectREFR
-#include "RE/TESObjectWEAP.h"  // TESObjectWEAP
+#include "RE/Skyrim.h"
 
 
 void DelayedWeaponTaskDelegate::Run()
 {
 	RE::TESObjectREFRPtr refrPtr;
 	RE::TESObjectREFR::LookupByHandle(_refHandle, refrPtr);
-	RE::TESObjectREFR* refr = refrPtr;
-	if (!refr || refr->IsNot(RE::FormType::Character)) {
+	RE::TESObjectREFR* refr = refrPtr.get();
+	if (!refr || refr->IsNot(RE::FormType::ActorCharacter)) {
 		return;
 	}
 
@@ -89,8 +72,8 @@ void DelayedActorTaskDelegate::Run()
 {
 	RE::TESObjectREFRPtr refPtr;
 	RE::TESObjectREFR::LookupByHandle(_refHandle, refPtr);
-	RE::TESObjectREFR* refr = refPtr;
-	if (!refr || refr->IsNot(RE::FormType::Character)) {
+	RE::TESObjectREFR* refr = refPtr.get();
+	if (!refr || refr->IsNot(RE::FormType::ActorCharacter)) {
 		return;
 	}
 
@@ -102,7 +85,7 @@ void DelayedActorTaskDelegate::Run()
 
 	RE::EffectSetting* effectSetting = 0;
 	for (auto& effect : *effects) {
-		effectSetting = effect->GetBaseObject();
+		effectSetting = effect->GetBaseEffect();
 		if (effectSetting && effectSetting->formID == _formID) {
 			RE::TESEffectShader* effectShader = 0;
 			if (effectShader = effectSetting->data.hitShader) {
@@ -145,19 +128,19 @@ RE::EventResult TESMagicEffectApplyEventHandler::ReceiveEvent(RE::TESMagicEffect
 
 	switch (a_event->target->baseForm->formType) {
 	case RE::FormType::NPC:
-	{
-		RE::TESNPC* npc = static_cast<RE::TESNPC*>(a_event->target->baseForm);
-		if (npc->IsGhost()) {
+		{
+			RE::TESNPC* npc = static_cast<RE::TESNPC*>(a_event->target->baseForm);
+			if (npc->IsGhost()) {
+				return EventResult::kContinue;
+			}
+			if (a_event->target->IsNot(RE::FormType::ActorCharacter)) {
+				return EventResult::kContinue;
+			}
+			UInt32 refHandle = a_event->target->CreateRefHandle();
+			DelayedActorTaskDelegate* dlgt = new DelayedActorTaskDelegate(refHandle, a_event->formID);
+			g_task->AddTask(dlgt);
 			return EventResult::kContinue;
 		}
-		if (a_event->target->IsNot(RE::FormType::Character)) {
-			return EventResult::kContinue;
-		}
-		UInt32 refHandle = a_event->target->CreateRefHandle();
-		DelayedActorTaskDelegate* dlgt = new DelayedActorTaskDelegate(refHandle, a_event->formID);
-		g_task->AddTask(dlgt);
-		return EventResult::kContinue;
-	}
 	default:
 		return EventResult::kContinue;
 	}
@@ -172,7 +155,7 @@ RE::EventResult TESEquipEventHandler::ReceiveEvent(RE::TESEquipEvent* a_event, R
 {
 	using RE::EventResult;
 
-	if (!a_event || !a_event->akSource || a_event->akSource->IsNot(RE::FormType::Character)) {
+	if (!a_event || !a_event->akSource || a_event->akSource->IsNot(RE::FormType::ActorCharacter)) {
 		return EventResult::kContinue;
 	}
 

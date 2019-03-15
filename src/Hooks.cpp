@@ -7,20 +7,7 @@
 
 #include "Settings.h"  // Settings
 
-#include "RE/Actor.h"  // Actor
-#include "RE/EffectItem.h"  // EffectItem
-#include "RE/EffectSetting.h"  // EffectSetting
-#include "RE/EnchantmentItem.h"  // EnchantmentItem
-#include "RE/ExtraDataTypes.h"  // ExtraDataType
-#include "RE/ExtraEnchantment.h"  // ExtraEnchantment
-#include "RE/FormTypes.h"  // FormType
-#include "RE/InventoryChanges.h"  // InventoryChanges
-#include "RE/InventoryEntryData.h"  // InventoryEntryData
-#include "RE/PlayerCharacter.h"  // PlayerCharacter
-#include "RE/TESContainer.h"  // TESContainer
-#include "RE/TESEffectShader.h"  // TESEffectShader
-#include "RE/TESForm.h"  // TESForm
-#include "RE/TESObjectWEAP.h"  // TESObjectWEAP
+#include "RE/Skyrim.h"
 
 
 class TESContainerVisitor
@@ -137,8 +124,7 @@ public:
 	static void InstallHooks()
 	{
 		if (!Settings::disableForWeapons) {
-			constexpr uintptr_t ACTOR_VTBL = 0x0166F6A0;
-			RelocPtr<_LoadBuffer_t*> vtbl_LoadBuffer(ACTOR_VTBL + (0xF * 0x8));
+			RelocPtr<_LoadBuffer_t*> vtbl_LoadBuffer(RE::Offset::Actor::Vtbl + (0xF * 0x8));
 			orig_LoadBuffer = *vtbl_LoadBuffer;
 			SafeWrite64(vtbl_LoadBuffer.GetUIntPtr(), GetFnAddr(&Hook_LoadBuffer));
 			_DMESSAGE("[DEBUG] Installed hooks for (%s)", typeid(ActorEx).name());
@@ -168,8 +154,7 @@ public:
 	static void InstallHooks()
 	{
 		if (!Settings::disableForWeapons) {
-			constexpr uintptr_t PLAYER_CHARACTER_VTBL = 0x0167D640;
-			RelocPtr<_LoadBuffer_t*> vtbl_LoadBuffer(PLAYER_CHARACTER_VTBL + (0xF * 0x8));
+			RelocPtr<_LoadBuffer_t*> vtbl_LoadBuffer(RE::Offset::PlayerCharacter::Vtbl + (0xF * 0x8));
 			orig_LoadBuffer = *vtbl_LoadBuffer;
 			SafeWrite64(vtbl_LoadBuffer.GetUIntPtr(), GetFnAddr(&Hook_LoadBuffer));
 			_DMESSAGE("[DEBUG] Installed hooks for (%s)", typeid(PlayerCharacterEx).name());

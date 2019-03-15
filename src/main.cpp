@@ -19,20 +19,20 @@ void MessageHandler(SKSEMessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type) {
 	case SKSEMessagingInterface::kMessage_DataLoaded:
-	{
-		RE::ScriptEventSourceHolder* sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
+		{
+			RE::ScriptEventSourceHolder* sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
 
-		if (!Settings::disableForActors) {
-			sourceHolder->magicEffectApplyEventSource.AddEventSink(&g_magicEffectApplyEventHandler);
-			_MESSAGE("[MESSAGE] Registered magic effect apply event handler");
-		}
+			if (!Settings::disableForActors) {
+				sourceHolder->magicEffectApplyEventSource.AddEventSink(&g_magicEffectApplyEventHandler);
+				_MESSAGE("[MESSAGE] Registered magic effect apply event handler");
+			}
 
-		if (!Settings::disableForWeapons) {
-			sourceHolder->equipEventSource.AddEventSink(&g_equipEventHandler);
-			_MESSAGE("[MESSAGE] Registered equip event event handler");
+			if (!Settings::disableForWeapons) {
+				sourceHolder->equipEventSource.AddEventSink(&g_equipEventHandler);
+				_MESSAGE("[MESSAGE] Registered equip event event handler");
+			}
 		}
 		break;
-	}
 	}
 }
 
@@ -57,7 +57,7 @@ extern "C" {
 			return false;
 		}
 
-		if (a_skse->runtimeVersion != RUNTIME_VERSION_1_5_62) {
+		if (a_skse->runtimeVersion != RUNTIME_VERSION_1_5_73) {
 			_FATALERROR("[FATAL ERROR] Unsupported runtime version %08X!\n", a_skse->runtimeVersion);
 			return false;
 		}
