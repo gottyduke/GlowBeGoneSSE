@@ -8,5 +8,5 @@ bool Settings::loadSettings(bool a_dumpParse)
 }
 
 
-bSetting	Settings::disableForActors("disableForActors", true, false);
-bSetting	Settings::disableForWeapons("disableForWeapons", true, false);
+decltype(Settings::disableForActors)	Settings::disableForActors("disableForActors", true, false);
+decltype(Settings::disableForWeapons)	Settings::disableForWeapons("disableForWeapons", true, false);

@@ -1,21 +1,26 @@
 #include "Events.h"
 
-#include "skse64/PluginAPI.h"  // SKSETaskInterface
-
+#include "SKSE/API.h"
 #include "RE/Skyrim.h"
+
+
+DelayedWeaponTaskDelegate::DelayedWeaponTaskDelegate(RE::RefHandle a_refHandle, UInt32 a_formID) :
+	_refHandle(a_refHandle),
+	_formID(a_formID)
+{}
 
 
 void DelayedWeaponTaskDelegate::Run()
 {
 	RE::TESObjectREFRPtr refrPtr;
 	RE::TESObjectREFR::LookupByHandle(_refHandle, refrPtr);
-	RE::TESObjectREFR* refr = refrPtr.get();
+	auto refr = refrPtr.get();
 	if (!refr || refr->IsNot(RE::FormType::ActorCharacter)) {
 		return;
 	}
 
-	RE::Actor* actor = static_cast<RE::Actor*>(refr);
-	RE::InventoryChanges* changes = actor->GetInventoryChanges();
+	auto actor = static_cast<RE::Actor*>(refr);
+	auto changes = actor->GetInventoryChanges();
 	if (!changes || !changes->entryList) {
 		return;
 	}
@@ -28,10 +33,10 @@ void DelayedWeaponTaskDelegate::Run()
 			if (!xList->HasType(RE::ExtraDataType::kWorn)) {
 				continue;
 			}
-			RE::TESObjectWEAP* weap = static_cast<RE::TESObjectWEAP*>(entry->type);
-			RE::EnchantmentItem* ench = weap->objectEffect;
+			auto weap = static_cast<RE::TESObjectWEAP*>(entry->type);
+			auto ench = weap->objectEffect;
 			if (!ench) {
-				RE::ExtraEnchantment* xEnch = xList->GetByType<RE::ExtraEnchantment>();
+				auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
 				if (!xEnch || !xEnch->objectEffect) {
 					break;
 				}
@@ -62,23 +67,27 @@ void DelayedWeaponTaskDelegate::Run()
 
 void DelayedWeaponTaskDelegate::Dispose()
 {
-	if (this) {
-		delete this;
-	}
+	delete this;
 }
+
+
+DelayedActorTaskDelegate::DelayedActorTaskDelegate(RE::RefHandle a_refHandle, UInt32 a_formID) :
+	_refHandle(a_refHandle),
+	_formID(a_formID)
+{}
 
 
 void DelayedActorTaskDelegate::Run()
 {
 	RE::TESObjectREFRPtr refPtr;
 	RE::TESObjectREFR::LookupByHandle(_refHandle, refPtr);
-	RE::TESObjectREFR* refr = refPtr.get();
+	auto refr = refPtr.get();
 	if (!refr || refr->IsNot(RE::FormType::ActorCharacter)) {
 		return;
 	}
 
-	RE::Actor* actor = static_cast<RE::Actor*>(refr);
-	RE::BSSimpleList<RE::ActiveEffect*>* effects = actor->GetActiveEffects();
+	auto actor = static_cast<RE::Actor*>(refr);
+	auto effects = actor->GetActiveEffects();
 	if (!effects) {
 		return;
 	}
@@ -108,20 +117,19 @@ void DelayedActorTaskDelegate::Run()
 
 void DelayedActorTaskDelegate::Dispose()
 {
-	if (this) {
-		delete this;
-	}
+	delete this;
 }
 
 
-TESMagicEffectApplyEventHandler::~TESMagicEffectApplyEventHandler()
-{}
+TESMagicEffectApplyEventHandler* TESMagicEffectApplyEventHandler::GetSingleton()
+{
+	static TESMagicEffectApplyEventHandler singleton;
+	return &singleton;
+}
 
 
 RE::EventResult TESMagicEffectApplyEventHandler::ReceiveEvent(RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource)
 {
-	using RE::EventResult;
-
 	if (!a_event || !a_event->target || !a_event->target->baseForm) {
 		return EventResult::kContinue;
 	}
@@ -129,16 +137,15 @@ RE::EventResult TESMagicEffectApplyEventHandler::ReceiveEvent(RE::TESMagicEffect
 	switch (a_event->target->baseForm->formType) {
 	case RE::FormType::NPC:
 		{
-			RE::TESNPC* npc = static_cast<RE::TESNPC*>(a_event->target->baseForm);
+			auto npc = static_cast<RE::TESNPC*>(a_event->target->baseForm);
 			if (npc->IsGhost()) {
 				return EventResult::kContinue;
 			}
 			if (a_event->target->IsNot(RE::FormType::ActorCharacter)) {
 				return EventResult::kContinue;
 			}
-			UInt32 refHandle = a_event->target->CreateRefHandle();
-			DelayedActorTaskDelegate* dlgt = new DelayedActorTaskDelegate(refHandle, a_event->formID);
-			g_task->AddTask(dlgt);
+			auto refHandle = a_event->target->CreateRefHandle();
+			SKSE::GetTaskInterface()->AddTask(new DelayedActorTaskDelegate(refHandle, a_event->formID));
 			return EventResult::kContinue;
 		}
 	default:
@@ -147,33 +154,28 @@ RE::EventResult TESMagicEffectApplyEventHandler::ReceiveEvent(RE::TESMagicEffect
 }
 
 
-TESEquipEventHandler::~TESEquipEventHandler()
-{}
+TESEquipEventHandler* TESEquipEventHandler::GetSingleton()
+{
+	static TESEquipEventHandler singleton;
+	return &singleton;
+}
 
 
 RE::EventResult TESEquipEventHandler::ReceiveEvent(RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource)
 {
-	using RE::EventResult;
-
 	if (!a_event || !a_event->akSource || a_event->akSource->IsNot(RE::FormType::ActorCharacter)) {
 		return EventResult::kContinue;
 	}
 
-	RE::TESForm* form = RE::TESForm::LookupByID(a_event->formID);
+	auto form = RE::TESForm::LookupByID(a_event->formID);
 	if (!form || form->IsNot(RE::FormType::Weapon)) {
 		return EventResult::kContinue;
 	}
 
-	UInt32 refHandle = a_event->akSource->CreateRefHandle();
+	auto refHandle = a_event->akSource->CreateRefHandle();
 	if (refHandle != *g_invalidRefHandle) {
-		DelayedWeaponTaskDelegate* dlgt = new DelayedWeaponTaskDelegate(refHandle, a_event->formID);
-		g_task->AddTask(dlgt);
+		SKSE::GetTaskInterface()->AddTask(new DelayedWeaponTaskDelegate(refHandle, a_event->formID));
 	}
 
 	return EventResult::kContinue;
 }
-
-
-SKSETaskInterface* g_task = 0;
-TESMagicEffectApplyEventHandler g_magicEffectApplyEventHandler;
-TESEquipEventHandler g_equipEventHandler;
