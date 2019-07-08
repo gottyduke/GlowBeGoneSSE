@@ -124,7 +124,7 @@ namespace
 				REL::Offset<func_t**> vFunc(RE::Offset::Actor::Vtbl + (0xF * 0x8));
 				func = *vFunc;
 				SafeWrite64(vFunc.GetAddress(), GetFnAddr(&Hook_LoadBuffer));
-				_DMESSAGE("[DEBUG] Installed hooks for (%s)", typeid(ActorEx).name());
+				_DMESSAGE("Installed hooks for (%s)", typeid(ActorEx).name());
 			}
 		}
 	};
@@ -151,7 +151,7 @@ public:
 			REL::Offset<func_t**> vFunc(RE::Offset::PlayerCharacter::Vtbl + (0xF * 0x8));
 			func = *vFunc;
 			SafeWrite64(vFunc.GetAddress(), GetFnAddr(&Hook_LoadBuffer));
-			_DMESSAGE("[DEBUG] Installed hooks for (%s)", typeid(PlayerCharacterEx).name());
+			_DMESSAGE("Installed hooks for (%s)", typeid(PlayerCharacterEx).name());
 		}
 	}
 };
