@@ -1,4 +1,8 @@
+#pragma once
+
 #include "skse64/gamethreads.h"  // TaskDelegate
+
+#include "Settings.h"
 
 #include "RE/Skyrim.h"
 

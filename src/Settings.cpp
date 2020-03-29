@@ -1,4 +1,4 @@
-#include "settings.h"
+#include "Settings.h"
 
 
 bool Settings::LoadSettings(bool a_dumpParse)
@@ -10,5 +10,6 @@ bool Settings::LoadSettings(bool a_dumpParse)
 	return success;
 }
 
-decltype(Settings::disableForActors)	Settings::disableForActors("disableForActors", false);
-decltype(Settings::disableForWeapons)	Settings::disableForWeapons("disableForWeapons", false);
+decltype(Settings::disableForActors)		Settings::disableForActors("disableForActors", false);
+decltype(Settings::disableForWeapons)		Settings::disableForWeapons("disableForWeapons", false);
+decltype(Settings::ignoreFleshFXEffects)	Settings::ignoreFleshFXEffects("ignoreFleshFXEffects", false);

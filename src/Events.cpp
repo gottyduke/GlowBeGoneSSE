@@ -141,6 +141,9 @@ auto TESMagicEffectApplyEventHandler::ProcessEvent(const RE::TESMagicEffectApply
 			if (a_event->target->IsNot(RE::FormType::ActorCharacter)) {
 				return EventResult::kContinue;
 			}
+			if (*Settings::ignoreFleshFXEffects && IgnoreList::FleshFX.count(a_event->magicEffect)) {
+				return EventResult::kContinue;
+			}
 			auto refHandle = a_event->target->CreateRefHandle();
 			SKSE::GetTaskInterface()->AddTask(new DelayedActorTaskDelegate(refHandle, a_event->magicEffect));
 			return EventResult::kContinue;

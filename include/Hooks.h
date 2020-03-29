@@ -121,7 +121,7 @@ namespace
 		static void InstallHooks()
 		{
 			if (!*Settings::disableForWeapons) {
-				REL::Offset<std::uintptr_t> vTable(REL::ID(34819));
+				REL::Offset<std::uintptr_t> vTable(REL::ID(260538));
 				func = vTable.WriteVFunc(0xF, &RE::Actor::LoadGame);
 				_DMESSAGE("Installed hooks for (%s)", typeid(ActorEx).name());
 			}
@@ -147,7 +147,7 @@ public:
 	static void InstallHooks()
 	{
 		if (!*Settings::disableForWeapons) {
-			REL::Offset<std::uintptr_t> vTable(REL::ID(34819));
+			REL::Offset<std::uintptr_t> vTable(REL::ID(260538));
 			func = vTable.WriteVFunc(0xF, &RE::PlayerCharacter::LoadGame);
 			_DMESSAGE("Installed hooks for (%s)", typeid(PlayerCharacterEx).name());
 		}

@@ -25,6 +25,10 @@ namespace
 					sourceHolder->AddEventSink(TESEquipEventHandler::GetSingleton());
 					_MESSAGE("Registered equip event event handler");
 				}
+
+				if (!*Settings::ignoreFleshFXEffects) {
+					_MESSAGE("Will ignore effects within FleshFX.esp");
+				}
 			}
 			break;
 		}
