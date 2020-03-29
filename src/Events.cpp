@@ -4,49 +4,47 @@
 #include "RE/Skyrim.h"
 
 
-DelayedWeaponTaskDelegate::DelayedWeaponTaskDelegate(RE::RefHandle a_refHandle, UInt32 a_formID) :
-	_refHandle(a_refHandle),
+DelayedWeaponTaskDelegate::DelayedWeaponTaskDelegate(RE::ObjectRefHandle a_objRefHandle, UInt32 a_formID) :
+	_objRefHandle(a_objRefHandle),
 	_formID(a_formID)
 {}
 
 
 void DelayedWeaponTaskDelegate::Run()
 {
-	RE::TESObjectREFRPtr refrPtr;
-	RE::TESObjectREFR::LookupByHandle(_refHandle, refrPtr);
-	auto refr = refrPtr.get();
+	auto refr = _objRefHandle.get();
 	if (!refr || refr->IsNot(RE::FormType::ActorCharacter)) {
 		return;
 	}
 
-	auto actor = static_cast<RE::Actor*>(refr);
+	auto actor = refr->As<RE::Actor>();
 	auto changes = actor->GetInventoryChanges();
 	if (!changes || !changes->entryList) {
 		return;
 	}
 
 	for (auto& entry : *changes->entryList) {
-		if (!entry->type || entry->type->formID != _formID || !entry->extraList) {
+		if (!entry->GetObject() || entry->GetObject()->GetFormID() != _formID || !entry->extraLists) {
 			continue;
 		}
-		for (auto& xList : *entry->extraList) {
+		for (auto& xList : *entry->extraLists) {
 			if (!xList->HasType(RE::ExtraDataType::kWorn)) {
 				continue;
 			}
-			auto weap = static_cast<RE::TESObjectWEAP*>(entry->type);
-			auto ench = weap->objectEffect;
+			auto weap = static_cast<RE::TESObjectWEAP*>(entry->GetObject());
+			auto ench = weap->formEnchanting;
 			if (!ench) {
 				auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
-				if (!xEnch || !xEnch->objectEffect) {
+				if (!xEnch || !xEnch->enchantment) {
 					break;
 				}
-				ench = xEnch->objectEffect;
+				ench = xEnch->enchantment;
 			}
 			RE::EffectSetting* effectSetting = 0;
 			for (auto& effect : ench->effects) {
 				if (effectSetting = effect->baseEffect) {
 					RE::TESEffectShader* effectShader = 0;
-					if (effectShader = effectSetting->data.hitShader) {
+					if (effectShader = effectSetting->data.effectShader) {
 						effectShader->data.fillTextureEffectPersistentAlphaRatio = 0.0;
 						effectShader->data.fillTextureEffectFullAlphaRatio = 0.0;
 						effectShader->data.edgeEffectPersistentAlphaRatio = 0.0;
@@ -71,33 +69,31 @@ void DelayedWeaponTaskDelegate::Dispose()
 }
 
 
-DelayedActorTaskDelegate::DelayedActorTaskDelegate(RE::RefHandle a_refHandle, UInt32 a_formID) :
-	_refHandle(a_refHandle),
+DelayedActorTaskDelegate::DelayedActorTaskDelegate(RE::ObjectRefHandle a_objRefHandle, UInt32 a_formID) :
+	_objRefHandle(a_objRefHandle),
 	_formID(a_formID)
 {}
 
 
 void DelayedActorTaskDelegate::Run()
 {
-	RE::TESObjectREFRPtr refPtr;
-	RE::TESObjectREFR::LookupByHandle(_refHandle, refPtr);
-	auto refr = refPtr.get();
+	auto refr = _objRefHandle.get();
 	if (!refr || refr->IsNot(RE::FormType::ActorCharacter)) {
 		return;
 	}
 
-	auto actor = static_cast<RE::Actor*>(refr);
-	auto effects = actor->GetActiveEffects();
+	auto actor = refr->As<RE::Actor>();
+	auto effects = actor->GetActiveEffectList();
 	if (!effects) {
 		return;
 	}
 
 	RE::EffectSetting* effectSetting = 0;
 	for (auto& effect : *effects) {
-		effectSetting = effect->GetBaseEffect();
+		effectSetting = effect->GetBaseObject();
 		if (effectSetting && effectSetting->formID == _formID) {
 			RE::TESEffectShader* effectShader = 0;
-			if (effectShader = effectSetting->data.hitShader) {
+			if (effectShader = effectSetting->data.effectShader) {
 				effectShader->data.fillTextureEffectPersistentAlphaRatio = 0.0;
 				effectShader->data.fillTextureEffectFullAlphaRatio = 0.0;
 				effectShader->data.edgeEffectPersistentAlphaRatio = 0.0;
@@ -128,16 +124,17 @@ TESMagicEffectApplyEventHandler* TESMagicEffectApplyEventHandler::GetSingleton()
 }
 
 
-RE::EventResult TESMagicEffectApplyEventHandler::ReceiveEvent(RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource)
+auto TESMagicEffectApplyEventHandler::ProcessEvent(const RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource)
+	-> EventResult
 {
-	if (!a_event || !a_event->target || !a_event->target->baseForm) {
+	if (!a_event || !a_event->target || !a_event->target->GetBaseObject()) {
 		return EventResult::kContinue;
 	}
 
-	switch (a_event->target->baseForm->formType) {
+	switch (a_event->target->GetBaseObject()->GetFormType()) {
 	case RE::FormType::NPC:
 		{
-			auto npc = static_cast<RE::TESNPC*>(a_event->target->baseForm);
+			auto npc = static_cast<RE::TESNPC*>(a_event->target->GetBaseObject());
 			if (npc->IsGhost()) {
 				return EventResult::kContinue;
 			}
@@ -145,7 +142,7 @@ RE::EventResult TESMagicEffectApplyEventHandler::ReceiveEvent(RE::TESMagicEffect
 				return EventResult::kContinue;
 			}
 			auto refHandle = a_event->target->CreateRefHandle();
-			SKSE::GetTaskInterface()->AddTask(new DelayedActorTaskDelegate(refHandle, a_event->formID));
+			SKSE::GetTaskInterface()->AddTask(new DelayedActorTaskDelegate(refHandle, a_event->magicEffect));
 			return EventResult::kContinue;
 		}
 	default:
@@ -161,21 +158,20 @@ TESEquipEventHandler* TESEquipEventHandler::GetSingleton()
 }
 
 
-RE::EventResult TESEquipEventHandler::ReceiveEvent(RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource)
+auto TESEquipEventHandler::ProcessEvent(const RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource)
+	-> EventResult
 {
-	if (!a_event || !a_event->akSource || a_event->akSource->IsNot(RE::FormType::ActorCharacter)) {
+	if (!a_event || !a_event->actor || a_event->actor->IsNot(RE::FormType::ActorCharacter)) {
 		return EventResult::kContinue;
 	}
 
-	auto form = RE::TESForm::LookupByID(a_event->formID);
+	auto form = RE::TESForm::LookupByID(a_event->baseObject);
 	if (!form || form->IsNot(RE::FormType::Weapon)) {
 		return EventResult::kContinue;
 	}
 
-	auto refHandle = a_event->akSource->CreateRefHandle();
-	if (refHandle != *g_invalidRefHandle) {
-		SKSE::GetTaskInterface()->AddTask(new DelayedWeaponTaskDelegate(refHandle, a_event->formID));
-	}
+	auto refHandle = a_event->actor->CreateRefHandle();
+	SKSE::GetTaskInterface()->AddTask(new DelayedWeaponTaskDelegate(refHandle, a_event->baseObject));
 
 	return EventResult::kContinue;
 }

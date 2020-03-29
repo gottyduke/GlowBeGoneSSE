@@ -1,6 +1,4 @@
-﻿#include "skse64_common/skse_version.h"  // RUNTIME_VERSION
-
-#include "Events.h"  // TESMagicEffectApplyEventHandler, TESEquipEventHandler
+﻿#include "Events.h"  // TESMagicEffectApplyEventHandler, TESEquipEventHandler
 #include "Hooks.h"  // InstallHooks
 #include "Settings.h"  // Settings
 #include "version.h"  // VERSION_VERSTRING, VERSION_MAJOR
@@ -18,13 +16,13 @@ namespace
 			{
 				auto sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
 
-				if (!Settings::disableForActors) {
-					sourceHolder->magicEffectApplyEventSource.AddEventSink(TESMagicEffectApplyEventHandler::GetSingleton());
+				if (!*Settings::disableForActors) {
+					sourceHolder->AddEventSink(TESMagicEffectApplyEventHandler::GetSingleton());
 					_MESSAGE("Registered magic effect apply event handler");
 				}
 
-				if (!Settings::disableForWeapons) {
-					sourceHolder->equipEventSource.AddEventSink(TESEquipEventHandler::GetSingleton());
+				if (!*Settings::disableForWeapons) {
+					sourceHolder->AddEventSink(TESEquipEventHandler::GetSingleton());
 					_MESSAGE("Registered equip event event handler");
 				}
 			}
@@ -42,7 +40,7 @@ extern "C" {
 		SKSE::Logger::SetFlushLevel(SKSE::Logger::Level::kDebugMessage);
 		SKSE::Logger::UseLogStamp(true);
 
-		_MESSAGE("GlowBeGoneSSE v%s", GLBG_VERSION_VERSTRING);
+		_MESSAGE("GlowBeGoneSSE Updated v%s", GLBG_VERSION_VERSTRING);
 
 		a_info->infoVersion = SKSE::PluginInfo::kVersion;
 		a_info->name = "GlowBeGoneSSE";
@@ -53,12 +51,9 @@ extern "C" {
 			return false;
 		}
 
-		switch (a_skse->RuntimeVersion()) {
-		case RUNTIME_VERSION_1_5_73:
-		case RUNTIME_VERSION_1_5_80:
-			break;
-		default:
-			_FATALERROR("Unsupported runtime version %08X!\n", a_skse->RuntimeVersion());
+		auto ver = a_skse->RuntimeVersion();
+		if (ver <= SKSE::RUNTIME_1_5_39) {
+			_FATALERROR("Unsupported runtime version %s!", ver.GetString().c_str());
 			return false;
 		}
 
@@ -68,7 +63,7 @@ extern "C" {
 
 	bool SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 	{
-		_MESSAGE("GlowBeGoneSSE loaded");
+		_MESSAGE("GlowBeGoneSSE - Updated loaded");
 
 		if (!SKSE::Init(a_skse)) {
 			return false;
@@ -82,7 +77,7 @@ extern "C" {
 			return false;
 		}
 
-		if (Settings::loadSettings()) {
+		if (Settings::LoadSettings()) {
 			_MESSAGE("Settings successfully loaded");
 		} else {
 			_FATALERROR("Settings failed to load!\n");

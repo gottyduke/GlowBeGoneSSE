@@ -6,41 +6,41 @@
 class DelayedWeaponTaskDelegate : public TaskDelegate
 {
 public:
-	DelayedWeaponTaskDelegate(RE::RefHandle a_refHandle, UInt32 a_formID);
+	DelayedWeaponTaskDelegate(RE::ObjectRefHandle a_refHandle, UInt32 a_formID);
 	~DelayedWeaponTaskDelegate() = default;
 
 	virtual void Run() override;
 	virtual void Dispose() override;
 
 private:
-	RE::RefHandle	_refHandle;
-	UInt32			_formID;
+	RE::ObjectRefHandle	_objRefHandle;
+	RE::FormID			_formID;
 };
 
 
 class DelayedActorTaskDelegate : public TaskDelegate
 {
 public:
-	DelayedActorTaskDelegate(RE::RefHandle a_refHandle, UInt32 a_formID);
+	DelayedActorTaskDelegate(RE::ObjectRefHandle a_refHandle, UInt32 a_formID);
 	~DelayedActorTaskDelegate() = default;
 
 	virtual void Run() override;
 	virtual void Dispose() override;
 
 private:
-	RE::RefHandle	_refHandle;
-	UInt32	_formID;
+	RE::ObjectRefHandle	_objRefHandle;
+	RE::FormID			_formID;
 };
 
 
 class TESMagicEffectApplyEventHandler : public RE::BSTEventSink<RE::TESMagicEffectApplyEvent>
 {
 public:
-	using EventResult = RE::EventResult;
-
+	using EventResult = RE::BSEventNotifyControl;
 
 	static TESMagicEffectApplyEventHandler* GetSingleton();
-	virtual	RE::EventResult	ReceiveEvent(RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource) override;
+
+	virtual	EventResult ProcessEvent(const RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource) override;
 
 private:
 	TESMagicEffectApplyEventHandler() = default;
@@ -56,11 +56,11 @@ private:
 class TESEquipEventHandler : public RE::BSTEventSink<RE::TESEquipEvent>
 {
 public:
-	using EventResult = RE::EventResult;
+	using EventResult = RE::BSEventNotifyControl;
 
 
 	static TESEquipEventHandler* GetSingleton();
-	virtual	RE::EventResult	ReceiveEvent(RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource) override;
+	virtual	EventResult	ProcessEvent(const RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource) override;
 
 private:
 	TESEquipEventHandler() = default;
