@@ -1,4 +1,4 @@
-# GlowBeGoneSSE
+# GlowBeGoneSSE - Updated
 
 ## Build Dependencies
 * [SKSE64](https://skse.silverlock.org/)
@@ -12,5 +12,7 @@
 ## Settings
 Setting | Description
 --- | ---
-`disableForActors` | Disables the mod from removing glow from actors.
-`disableForWeapons` | Disables the mod from removing glow from weapons.
+`removeActorFX` | Disables glow from actors.
+`removeWeaponFX`| Disables glow from weapons.
+`excludePlugin` | Function to ignore certain plugins from being removed.
+`exclusionList` | String array contains the plugin names which are excluded.
