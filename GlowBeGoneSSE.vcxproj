@@ -134,7 +134,8 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy /Y "$(TargetPath)" "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\Test SKSE\SKSE\Plugins\$(TargetFileName)"</Command>
+      <Command>if not exist "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\" mkdir "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\"
+copy /y "$(TargetPath)" "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -142,14 +143,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Events.cpp" />
-    <ClCompile Include="src\IgnoreList.cpp" />
+    <ClCompile Include="src\Exclusion.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Events.h" />
     <ClInclude Include="include\Hooks.h" />
-    <ClInclude Include="include\IgnoreList.h" />
+    <ClInclude Include="include\Exclusion.h" />
     <ClInclude Include="include\Settings.h" />
     <ClInclude Include="include\version.h" />
   </ItemGroup>

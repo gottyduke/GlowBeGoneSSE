@@ -1,5 +1,6 @@
 ﻿#include "Events.h"  // TESMagicEffectApplyEventHandler, TESEquipEventHandler
 #include "Hooks.h"  // InstallHooks
+#include "Exclusion.h" // IgnoreList
 #include "Settings.h"  // Settings
 #include "version.h"  // VERSION_VERSTRING, VERSION_MAJOR
 
@@ -16,18 +17,18 @@ namespace
 			{
 				auto sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
 
-				if (!*Settings::disableForActors) {
+				if (*Settings::removeActorFX) {
 					sourceHolder->AddEventSink(TESMagicEffectApplyEventHandler::GetSingleton());
 					_MESSAGE("Registered magic effect apply event handler");
 				}
 
-				if (!*Settings::disableForWeapons) {
+				if (*Settings::removeWeaponFX) {
 					sourceHolder->AddEventSink(TESEquipEventHandler::GetSingleton());
 					_MESSAGE("Registered equip event event handler");
 				}
 
-				if (!*Settings::ignoreFleshFXEffects) {
-					_MESSAGE("Will ignore effects within FleshFX.esp");
+				if (*Settings::excludePlugin) {
+					_MESSAGE("Plugin exclusion enabled");
 				}
 			}
 			break;

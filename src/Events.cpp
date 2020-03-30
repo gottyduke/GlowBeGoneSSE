@@ -1,4 +1,5 @@
 #include "Events.h"
+#include "Exclusion.h"
 
 #include "SKSE/API.h"
 #include "RE/Skyrim.h"
@@ -141,7 +142,7 @@ auto TESMagicEffectApplyEventHandler::ProcessEvent(const RE::TESMagicEffectApply
 			if (a_event->target->IsNot(RE::FormType::ActorCharacter)) {
 				return EventResult::kContinue;
 			}
-			if (*Settings::ignoreFleshFXEffects && IgnoreList::FleshFX.count(a_event->magicEffect)) {
+			if (*Settings::excludePlugin && Exclusion::IsExcluded(a_event->magicEffect)) {
 				return EventResult::kContinue;
 			}
 			auto refHandle = a_event->target->CreateRefHandle();
@@ -170,6 +171,9 @@ auto TESEquipEventHandler::ProcessEvent(const RE::TESEquipEvent* a_event, RE::BS
 
 	auto form = RE::TESForm::LookupByID(a_event->baseObject);
 	if (!form || form->IsNot(RE::FormType::Weapon)) {
+		return EventResult::kContinue;
+	}
+	if (*Settings::excludePlugin && Exclusion::IsExcluded(a_event->baseObject)) {
 		return EventResult::kContinue;
 	}
 

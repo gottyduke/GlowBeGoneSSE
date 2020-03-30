@@ -1,5 +1,8 @@
 {
-	"disableForActors": false,
-	"disableForWeapons": false,
-	"ignoreFleshFXEffects": false
+	"removeActorFX": true,
+	"removeWeaponFX": true,
+	"excludePlugin": false,
+	"exclusionList": [
+
+	]
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Hooks.h"
-
 #include <typeinfo>  // typeid
 
 #include "Settings.h"  // Settings
@@ -120,7 +118,7 @@ namespace
 
 		static void InstallHooks()
 		{
-			if (!*Settings::disableForWeapons) {
+			if (*Settings::removeActorFX) {
 				REL::Offset<std::uintptr_t> vTable(REL::ID(260538));
 				func = vTable.WriteVFunc(0xF, &RE::Actor::LoadGame);
 				_DMESSAGE("Installed hooks for (%s)", typeid(ActorEx).name());
@@ -146,7 +144,7 @@ public:
 
 	static void InstallHooks()
 	{
-		if (!*Settings::disableForWeapons) {
+		if (*Settings::removeWeaponFX) {
 			REL::Offset<std::uintptr_t> vTable(REL::ID(260538));
 			func = vTable.WriteVFunc(0xF, &RE::PlayerCharacter::LoadGame);
 			_DMESSAGE("Installed hooks for (%s)", typeid(PlayerCharacterEx).name());
