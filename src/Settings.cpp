@@ -13,7 +13,7 @@ bool Settings::LoadSettings(bool a_dumpParse)
 		*excludePlugin = false;
 	}
 	for (auto& ex : *Settings::exclusionList)
-		_MESSAGE("Exclusion list: %s", ex);
+		_MESSAGE("Exclusion list: %s", ex.c_str());
 
 	return success;
 }
