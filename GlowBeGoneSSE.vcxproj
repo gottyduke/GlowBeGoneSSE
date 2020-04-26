@@ -28,6 +28,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -52,25 +53,26 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)..;$(ProjectDir)include;$(SolutionDir)CommonLibSSE\include;$(SolutionDir)Json2Settings\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PLUGIN_EXAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ForcedIncludeFiles>ForceInclude.h;SKSE/Logger.h</ForcedIncludeFiles>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
@@ -87,7 +89,9 @@
       </Message>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "$(Skyrim64Path)\Data\SKSE\Plugins\$(TargetFileName)" /Y</Command>
+      <Command>if not exist "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\" mkdir "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\"
+copy /y "$(TargetPath)" "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\$(TargetFileName)"
+call "$(ProjectDir)!QuickUpdateJson.cmd"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>
@@ -113,7 +117,7 @@
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
       <CompileAs>CompileAsCpp</CompileAs>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <UseFullPaths>false</UseFullPaths>
     </ClCompile>
@@ -134,7 +138,13 @@
     <PostBuildEvent>
       <Message>
       </Message>
+<<<<<<< Updated upstream
       <Command>copy "$(TargetPath)" "$(Skyrim64Path)\Data\SKSE\Plugins\$(TargetFileName)" /Y</Command>
+=======
+      <Command>if not exist "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\" mkdir "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\"
+copy /y "$(TargetPath)" "D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition\MO2\mods\$(TargetName)\SKSE\Plugins\$(TargetFileName)"
+call "$(ProjectDir)!QuickUpdateJson.cmd"</Command>
+>>>>>>> Stashed changes
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

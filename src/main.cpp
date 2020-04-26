@@ -34,7 +34,8 @@ namespace
 }
 
 
-extern "C" {
+extern "C"
+{
 	bool SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 	{
 		SKSE::Logger::OpenRelative(FOLDERID_Documents, L"\\My Games\\Skyrim Special Edition\\SKSE\\GlowBeGoneSSE.log");
@@ -70,7 +71,7 @@ extern "C" {
 	{
 		_MESSAGE("GlowBeGoneSSE loaded");
 
-		if (!SKSE::Init(a_skse)) {
+		if (!Init(a_skse)) {
 			return false;
 		}
 
