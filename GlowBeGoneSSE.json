@@ -1,8 +1,0 @@
-{
-	"removeActorFX": true,
-	"removeWeaponFX": true,
-	"excludePlugin": false,
-	"exclusionList": [
-
-	]
-}

@@ -1,96 +1,97 @@
-﻿#include "Events.h"  // TESMagicEffectApplyEventHandler, TESEquipEventHandler
-#include "Hooks.h"  // InstallHooks
-#include "Exclusion.h" // IgnoreList
-#include "Settings.h"  // Settings
-#include "version.h"  // VERSION_VERSTRING, VERSION_MAJOR
-
-#include "SKSE/API.h"
-#include "RE/Skyrim.h"
+#include "Config.h"
+#include "Events.h"
+#include "Hooks.h"
 
 
 namespace
 {
 	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	{
-		switch (a_msg->type) {
-		case SKSE::MessagingInterface::kDataLoaded:
-			{
-				auto sourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
+		if (a_msg->type == SKSE::MessagingInterface::kDataLoaded) {
+			auto* source = RE::ScriptEventSourceHolder::GetSingleton();
 
-				if (*Settings::removeActorFX) {
-					sourceHolder->AddEventSink(TESMagicEffectApplyEventHandler::GetSingleton());
-					_MESSAGE("Registered magic effect apply event handler");
-				}
-
-				if (*Settings::removeWeaponFX) {
-					sourceHolder->AddEventSink(TESEquipEventHandler::GetSingleton());
-					_MESSAGE("Registered equip event event handler");
-				}
-
-				if (*Settings::excludePlugin) {
-					_MESSAGE("Plugin exclusion enabled");
-				}
+			if (*Config::RemoveActorFX) {
+				source->AddEventSink(Events::TESMagicEffectApplyEventHandler::GetSingleton());
+				INFO("Registered magic effect apply event handler"sv);
 			}
-			break;
+
+			if (*Config::RemoveWeaponFX) {
+				source->AddEventSink(Events::TESEquipEventHandler::GetSingleton());
+				INFO("Registered equip event event handler"sv);
+			}
 		}
 	}
 }
 
 
-extern "C" {
-	bool SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
-	{
-		SKSE::Logger::OpenRelative(FOLDERID_Documents, L"\\My Games\\Skyrim Special Edition\\SKSE\\GlowBeGoneSSE.log");
-		SKSE::Logger::SetPrintLevel(SKSE::Logger::Level::kDebugMessage);
-		SKSE::Logger::SetFlushLevel(SKSE::Logger::Level::kDebugMessage);
-		SKSE::Logger::UseLogStamp(true);
+#if ANNIVERSARY_EDITION
 
-		_MESSAGE("GlowBeGoneSSE Updated v%s", GLBG_VERSION_VERSTRING);
+extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []()
+{
+	SKSE::PluginVersionData data{};
 
-		a_info->infoVersion = SKSE::PluginInfo::kVersion;
-		a_info->name = "GlowBeGoneSSE";
-		a_info->version = GLBG_VERSION_MAJOR;
+	data.PluginVersion(Version::MAJOR);
+	data.PluginName(Version::NAME);
+	data.AuthorName("Fudgyduff - Dropkicker"sv);
 
-		if (a_skse->IsEditor()) {
-			_FATALERROR("Loaded in editor, marking as incompatible!\n");
-			return false;
-		}
+	data.CompatibleVersions({ SKSE::RUNTIME_LATEST });
+	data.UsesAddressLibrary(true);
 
-		auto ver = a_skse->RuntimeVersion();
-		if (ver <= SKSE::RUNTIME_1_5_39) {
-			_FATALERROR("Unsupported runtime version %s!", ver.GetString().c_str());
-			return false;
-		}
+	return data;
+}();
 
-		return true;
+#else
+
+extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
+{
+	DKUtil::Logger::Init(Version::PROJECT, Version::NAME);
+
+	a_info->infoVersion = SKSE::PluginInfo::kVersion;
+	a_info->name = Version::PROJECT.data();
+	a_info->version = Version::MAJOR;
+
+	if (a_skse->IsEditor()) {
+		ERROR("Loaded in editor, marking as incompatible"sv);
+		return false;
 	}
 
-
-	bool SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
-	{
-		_MESSAGE("GlowBeGoneSSE - Updated loaded");
-
-		if (!SKSE::Init(a_skse)) {
-			return false;
-		}
-
-		auto messaging = SKSE::GetMessagingInterface();
-		if (messaging->RegisterListener("SKSE", MessageHandler)) {
-			_MESSAGE("Messaging interface registration successful");
-		} else {
-			_FATALERROR("Messaging interface registration failed!\n");
-			return false;
-		}
-
-		if (Settings::LoadSettings()) {
-			_MESSAGE("Settings successfully loaded");
-		} else {
-			_FATALERROR("Settings failed to load!\n");
-			return false;
-		}
-
-		InstallHooks();
-
-		return true;
+	const auto ver = a_skse->RuntimeVersion();
+	if (ver < SKSE::RUNTIME_1_5_39) {
+		ERROR("Unable to load this plugin, incompatible runtime version!\nExpected: Newer than 1-5-39-0 (A.K.A Special Edition)\nDetected: {}", ver.string());
+		return false;
 	}
-};
+
+	return true;
+}
+
+#endif
+
+
+extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
+{
+#if ANNIVERSARY_EDITION
+
+	DKUtil::Logger::Init(Version::PROJECT, Version::NAME);
+
+	if (REL::Module::get().version() < SKSE::RUNTIME_1_6_317) {
+		ERROR("Unable to load this plugin, incompatible runtime version!\nExpected: Newer than 1-6-317-0 (A.K.A Anniversary Edition)\nDetected: {}", REL::Module::get().version().string());
+		return false;
+	}
+
+#endif
+
+	INFO("{} v{} loaded", Version::PROJECT, Version::NAME);
+
+	SKSE::Init(a_skse);
+
+	Config::Load();
+
+	Hooks::Install();
+
+	auto* messaging = SKSE::GetMessagingInterface();
+	if (!messaging->RegisterListener(MessageHandler)) {
+		return false;
+	}
+
+	return true;
+}

@@ -1,4 +1,0 @@
-LIBRARY	"GlowBeGoneSSE"
-EXPORTS
-SKSEPlugin_Query
-SKSEPlugin_Load

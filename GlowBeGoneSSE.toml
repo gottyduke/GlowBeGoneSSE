@@ -1,0 +1,15 @@
+[FX]
+RemoveActorFX = true
+RemoveWeaponFX = true
+
+[Exclusion]
+ExclusionList = [
+    "Campfire.esm",
+    "Dirt and Blood - Dynamic Visuals.esp",
+    "FleshFX.esp",
+    "Frostfall.esp",
+    "RASS - Visual Effects.esl",
+    "WetandCold.esp",
+    # Add your beloved plugin names below and separate by (,)comma, surrounded by (")double quotation marks.
+    
+]
