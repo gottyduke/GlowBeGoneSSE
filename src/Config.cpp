@@ -1,6 +1,5 @@
 #include "Config.h"
 
-
 namespace Config
 {
 	Boolean RemoveActorFX{ "RemoveActorFX" };
@@ -8,27 +7,24 @@ namespace Config
 	String ExclusionList{ "ExclusionList" };
 	std::unordered_set<RE::FormID> ExclusionID;
 
-
 	void Load()
 	{
 		auto mainConfig = COMPILE_PROXY("GlowBeGoneSSE.toml"sv);
 
 		mainConfig.Bind(RemoveActorFX, true);
 		mainConfig.Bind(RemoveWeaponFX, true);
-		mainConfig.Bind(ExclusionList, 
+		mainConfig.Bind(ExclusionList,
 			"Campfire.esm",
 			"Dirt and Blood - Dynamic Visuals.esp",
 			"FleshFX.esp",
 			"Frostfall.esp",
 			"RASS - Visual Effects.esl",
-			"WetandCold.esp"
-		);
+			"WetandCold.esp");
 
 		mainConfig.Load();
 
 		INFO("Config Loaded"sv);
 	}
-
 
 	bool IsExcluded(const RE::FormID a_formID)
 	{
@@ -41,7 +37,7 @@ namespace Config
 
 		for (auto& ex : Config::ExclusionList.get_collection()) {
 			if ((dataHandler->LookupLoadedModByName(ex) ||
-				dataHandler->LookupLoadedLightModByName(ex)) &&
+					dataHandler->LookupLoadedLightModByName(ex)) &&
 				ex == file) {
 				ExclusionID.emplace(a_formID);
 
@@ -51,4 +47,4 @@ namespace Config
 
 		return false;
 	}
-} // namespace Config
+}  // namespace Config

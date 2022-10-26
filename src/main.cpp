@@ -2,7 +2,6 @@
 #include "Events.h"
 #include "Hooks.h"
 
-
 namespace
 {
 	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
@@ -22,7 +21,6 @@ namespace
 		}
 	}
 }
-
 
 DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {

@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace Config
 {
 	using namespace DKUtil::Alias;
@@ -10,11 +9,9 @@ namespace Config
 	extern String ExclusionList;
 	extern std::unordered_set<RE::FormID> ExclusionID;
 
-	
 	void Load();
 	bool IsExcluded(const RE::FormID a_formID);
-} // namespace Config
-
+}  // namespace Config
 
 namespace
 {

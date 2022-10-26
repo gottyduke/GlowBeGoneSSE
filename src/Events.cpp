@@ -1,6 +1,5 @@
 #include "Events.h"
 
-
 namespace Events
 {
 	void DelayedWeaponTaskDelegate::Run()
@@ -46,7 +45,6 @@ namespace Events
 		}
 	}
 
-
 	void DelayedActorTaskDelegate::Run()
 	{
 		auto refr = _objRefHandle.get();
@@ -73,7 +71,6 @@ namespace Events
 		}
 	}
 
-
 	auto TESEquipEventHandler::ProcessEvent(const RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource)
 		-> EventResult
 	{
@@ -94,7 +91,6 @@ namespace Events
 
 		return EventResult::kContinue;
 	}
-
 
 	auto TESMagicEffectApplyEventHandler::ProcessEvent(const RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource)
 		-> EventResult

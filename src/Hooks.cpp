@@ -1,7 +1,6 @@
 #include "Hooks.h"
 
-
-namespace Hooks 
+namespace Hooks
 {
 	bool ContainerVisitor(RE::ContainerObject& a_entry)
 	{
@@ -19,14 +18,13 @@ namespace Hooks
 			if (!effect) {
 				continue;
 			}
-			
+
 			if (auto* effectSetting = effect->baseEffect; effectSetting) {
 				RemoveShader(effectSetting);
 			}
 		}
 		return true;
 	}
-
 
 	void RemoveGlowFX(RE::Actor* a_actor)
 	{
@@ -74,14 +72,12 @@ namespace Hooks
 		}
 	}
 
-
 	void CharacterEx::Install()
 	{
 		REL::Relocation<std::uintptr_t> vTbl{ VTABLE[0] };
 		func = vTbl.write_vfunc(0x0F, &Hook_LoadBuffer);
 		INFO("Installed hooks for Character"sv);
 	}
-
 
 	void PlayerCharacterEx::Install()
 	{
@@ -90,11 +86,10 @@ namespace Hooks
 		INFO("Installed hooks for PlayerCharacter"sv);
 	}
 
-
 	void Install()
 	{
 		//ENABLE_DEBUG
 		CharacterEx::Install();
 		PlayerCharacterEx::Install();
 	}
-} // namespace Hooks
+}  // namespace Hooks
