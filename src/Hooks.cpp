@@ -1,5 +1,4 @@
 #include "Hooks.h"
-#include "Config.h"
 
 
 namespace Hooks 
@@ -22,20 +21,7 @@ namespace Hooks
 			}
 			
 			if (auto* effectSetting = effect->baseEffect; effectSetting) {
-				RE::TESEffectShader* effectShader = effectSetting->data.effectShader;
-
-				if (effectShader) {
-					effectShader->data.fillTextureEffectPersistentAlphaRatio = 0.0;
-					effectShader->data.fillTextureEffectFullAlphaRatio = 0.0;
-					effectShader->data.edgeEffectPersistentAlphaRatio = 0.0;
-					effectShader->data.edgeEffectFullAlphaRatio = 0.0;
-				}
-				if (effectShader = effectSetting->data.enchantShader; effectShader) {
-					effectShader->data.fillTextureEffectPersistentAlphaRatio = 0.0;
-					effectShader->data.fillTextureEffectFullAlphaRatio = 0.0;
-					effectShader->data.edgeEffectPersistentAlphaRatio = 0.0;
-					effectShader->data.edgeEffectFullAlphaRatio = 0.0;
-				}
+				RemoveShader(effectSetting);
 			}
 		}
 		return true;
@@ -58,10 +44,12 @@ namespace Hooks
 			if (!entry->object || !entry->extraLists) {
 				continue;
 			}
+
 			for (auto* xList : *entry->extraLists) {
 				if (!xList || !xList->HasType(RE::ExtraDataType::kWorn)) {
 					continue;
 				}
+
 				auto* weap = static_cast<RE::TESObjectWEAP*>(entry->object);
 				auto* ench = weap->formEnchanting;
 				if (!ench) {
@@ -69,6 +57,7 @@ namespace Hooks
 					if (!xEnch || !xEnch->enchantment) {
 						break;
 					}
+
 					ench = xEnch->enchantment;
 				}
 
@@ -76,20 +65,9 @@ namespace Hooks
 					if (!effect) {
 						continue;
 					}
+
 					if (auto* effectSetting = effect->baseEffect; effectSetting) {
-						RE::TESEffectShader* effectShader = effectSetting->data.effectShader;
-						if (effectShader) {
-							effectShader->data.fillTextureEffectPersistentAlphaRatio = 0.0;
-							effectShader->data.fillTextureEffectFullAlphaRatio = 0.0;
-							effectShader->data.edgeEffectPersistentAlphaRatio = 0.0;
-							effectShader->data.edgeEffectFullAlphaRatio = 0.0;
-						}
-						if (effectShader = effectSetting->data.enchantShader; effectShader) {
-							effectShader->data.fillTextureEffectPersistentAlphaRatio = 0.0;
-							effectShader->data.fillTextureEffectFullAlphaRatio = 0.0;
-							effectShader->data.edgeEffectPersistentAlphaRatio = 0.0;
-							effectShader->data.edgeEffectFullAlphaRatio = 0.0;
-						}
+						RemoveShader(effectSetting);
 					}
 				}
 			}
@@ -97,27 +75,26 @@ namespace Hooks
 	}
 
 
-	void ActorEx::Install() {
-		if (*Config::RemoveActorFX) {
-			REL::Relocation<std::uintptr_t> vTbl{ RE::Offset::Actor::Vtbl };
-			func = vTbl.write_vfunc(0x0F, &RE::Actor::LoadGame);
-			INFO("Installed hooks for Actor"sv);
-		}
+	void CharacterEx::Install()
+	{
+		REL::Relocation<std::uintptr_t> vTbl{ VTABLE[0] };
+		func = vTbl.write_vfunc(0x0F, &Hook_LoadBuffer);
+		INFO("Installed hooks for Character"sv);
 	}
 
 
-	void PlayerCharacterEx::Install() {
-		if (*Config::RemoveActorFX) {
-			REL::Relocation<std::uintptr_t> vTbl{ RE::Offset::Actor::Vtbl };
-			func = vTbl.write_vfunc(0x0F, &RE::PlayerCharacter::LoadGame);
-			INFO("Installed hooks for PlayerCharacter"sv);
-		}
+	void PlayerCharacterEx::Install()
+	{
+		REL::Relocation<std::uintptr_t> vTbl{ VTABLE[0] };
+		func = vTbl.write_vfunc(0x0F, &Hook_LoadBuffer);
+		INFO("Installed hooks for PlayerCharacter"sv);
 	}
 
 
 	void Install()
 	{
-		ActorEx::Install();
+		//ENABLE_DEBUG
+		CharacterEx::Install();
 		PlayerCharacterEx::Install();
 	}
 } // namespace Hooks

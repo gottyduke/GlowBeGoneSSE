@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Config.h"
+
 
 namespace Hooks
 {
@@ -7,15 +9,15 @@ namespace Hooks
 	void RemoveGlowFX(RE::Actor* a_actor);
 
 
-	class ActorEx : public RE::Actor
+	class CharacterEx : public RE::Character
 	{
 	public:
-		using func_t = decltype(&RE::Actor::LoadGame);
-		static inline REL::Relocation<func_t> func;
+		static inline REL::Relocation<decltype(&RE::Character::LoadGame)> func;
 
 
 		void Hook_LoadBuffer(RE::BGSLoadFormBuffer* a_buf)  // 0F
 		{
+			DEBUG("Load Character: {}|{:X}", GetName(), GetFormID());
 			func(this, a_buf);
 			RemoveGlowFX(this);
 		}
@@ -28,12 +30,12 @@ namespace Hooks
 	class PlayerCharacterEx : public RE::PlayerCharacter
 	{
 	public:
-		using func_t = decltype(&RE::PlayerCharacter::LoadGame);
-		static inline REL::Relocation<func_t> func;
+		static inline REL::Relocation<decltype(&RE::PlayerCharacter::LoadGame)> func;
 
 
 		void Hook_LoadBuffer(RE::BGSLoadFormBuffer* a_buf)  // 0F
 		{
+			DEBUG("Load PC: {}|{:X}", GetName(), GetFormID());
 			func(this, a_buf);
 			RemoveGlowFX(this);
 		}

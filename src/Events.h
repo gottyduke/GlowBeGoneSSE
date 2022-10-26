@@ -50,16 +50,20 @@ namespace Events
 	};
 
 
-	class TESMagicEffectApplyEventHandler : public RE::BSTEventSink<RE::TESMagicEffectApplyEvent>, public DKUtil::model::Singleton<TESMagicEffectApplyEventHandler>
+	class TESEquipEventHandler :
+		public DKUtil::model::Singleton<TESEquipEventHandler>,
+		public RE::BSTEventSink<RE::TESEquipEvent>
 	{
 	public:
-		virtual	EventResult ProcessEvent(const RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource) override;
+		virtual EventResult ProcessEvent(const RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource) override;
 	};
 
 
-	class TESEquipEventHandler : public RE::BSTEventSink<RE::TESEquipEvent>, public DKUtil::model::Singleton<TESMagicEffectApplyEventHandler>
+	class TESMagicEffectApplyEventHandler : 
+		public DKUtil::model::Singleton<TESMagicEffectApplyEventHandler>,
+		public RE::BSTEventSink<RE::TESMagicEffectApplyEvent>
 	{
 	public:
-		virtual	EventResult	ProcessEvent(const RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>* a_eventSource) override;
+		virtual	EventResult ProcessEvent(const RE::TESMagicEffectApplyEvent* a_event, RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* a_eventSource) override;
 	};
 } // namespace Events

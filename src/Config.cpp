@@ -43,7 +43,8 @@ namespace Config
 			if ((dataHandler->LookupLoadedModByName(ex) ||
 				dataHandler->LookupLoadedLightModByName(ex)) &&
 				ex == file) {
-				ExclusionID.insert(a_formID);
+				ExclusionID.emplace(a_formID);
+
 				return true;
 			}
 		}
